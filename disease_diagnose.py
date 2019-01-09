@@ -3,8 +3,9 @@ import pandas as pd
 import spacy
 from spacy.matcher import PhraseMatcher
 
-from actions.actions import Action, AdditionalSymptomsAction, GreetingAction
-from actions.handlers import GreetingHandler, AdditionalSymptomsHandler
+from actions.actions import Action, AdditionalSymptomsAction, GreetingAction, ShowSymsAction, HelpAction, \
+    TerminateAction
+from actions.handlers import GreetingHandler, AdditionalSymptomsHandler, ShowSymsHandler, TerminateHandler, HelpHandler
 from context import Context
 from input_providers import Speech, Terminal, Provider
 from intents.intent_req_handlers import UserInputReqHandler, TerminateReqHandler
@@ -13,11 +14,22 @@ from intents.intents import UserInputIntent, Intent
 
 
 def process_intent(intent: Intent) -> Action:
-    print('processing intent:', intent)
+    # print('processing intent:', intent)
     ctx: Context = intent.ctx
 
     if type(intent) == UserInputIntent:
-        action = AdditionalSymptomsAction(intent, ctx)
+        # check if one of the built in options
+        user_input = intent.user_input
+
+        if user_input == 'show symptoms':
+            action = ShowSymsAction(ctx)
+        elif user_input == 'help':
+            action = HelpAction(ctx)
+        elif user_input == 'bye' or user_input == 'quit' or user_input == 'exit':
+            print('user wants to exit')
+            action = TerminateAction(ctx)
+        else:
+            action = AdditionalSymptomsAction(intent, ctx)
     else:
         raise Exception("unsupported intent type:", type(intent))
 
@@ -28,7 +40,6 @@ def create_metcher(nlp, symptoms_ds):
     print("creating symptoms matcher")
     sym_series = symptoms_ds['symptom']
     sym_list = sym_series.tolist()
-    print("sym list:", sym_list)
     matcher = PhraseMatcher(nlp.vocab)
 
     for sym_phrase in sym_list:
@@ -52,8 +63,14 @@ def get_input_provider() -> Provider:
 def handle_action(action: Action) -> IntentReq:
     if type(action) == GreetingAction:
         intent_req = GreetingHandler().handle(action)
+    elif type(action) == HelpAction:
+        intent_req = HelpHandler().handle(action)
+    elif type(action) == ShowSymsAction:
+        intent_req = ShowSymsHandler().handle(action)
     elif type(action) == AdditionalSymptomsAction:
         intent_req = AdditionalSymptomsHandler().handle(action)
+    elif type(action) == TerminateAction:
+        intent_req = TerminateHandler().handle(action)
     else:
         raise Exception("no action handler was found for")
 
@@ -82,14 +99,6 @@ def diagnose(context: Context):
 
         action: Action = process_intent(intent)
         intent = handle_intent_req(handle_action(action))
-
-    if len(context.possible_diseases) > 0:
-        print('\nhealth condition diagnosis finished\n')
-        print("possible condition(s) you might suffer from:", context.possible_diseases)
-    else:
-        print("possible health condition is not diagnosed. sorry.")
-
-    print("bye for now. i am glad to be of help")
 
 
 def init() -> Context:

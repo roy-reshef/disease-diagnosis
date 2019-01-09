@@ -1,5 +1,6 @@
 from abc import abstractmethod
 
+import utils
 from intents.intent_reqs import IntentReq, UserInputIntentReq, TerminateIntentReq
 from intents.intents import Intent, UserInputIntent, NoIntent
 
@@ -27,4 +28,6 @@ class TerminateReqHandler(IntentReqHandler):
     def handle(self, intent_req: TerminateIntentReq) -> Intent:
         ctx = intent_req.ctx
         ctx.set_is_in_conversation(False)
+
+        utils.end_session(intent_req.ctx)
         return NoIntent(ctx)

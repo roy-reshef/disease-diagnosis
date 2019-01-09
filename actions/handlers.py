@@ -1,7 +1,7 @@
 from abc import abstractmethod
 
 import utils
-from actions.actions import Action, AdditionalSymptomsAction, GreetingAction
+from actions.actions import Action, AdditionalSymptomsAction, GreetingAction, ShowSymsAction
 from intents.intent_reqs import IntentReq, TerminateIntentReq, UserInputIntentReq
 from intents.intents import UserInputIntent
 
@@ -16,6 +16,26 @@ class GreetingHandler(ActionHandler):
     def handle(self, action: GreetingAction) -> IntentReq:
         print("Hi there, How are you feeling today?")
         return UserInputIntentReq(action.ctx)
+
+
+class ShowSymsHandler(ActionHandler):
+    def handle(self, action: ShowSymsAction) -> IntentReq:
+        print("here is the complete symptoms list\n", action.ctx.symptoms_ds['symptom'].tolist())
+        return UserInputIntentReq(action.ctx)
+
+
+class HelpHandler(ActionHandler):
+    def handle(self, action: ShowSymsAction) -> IntentReq:
+        print("HELP:\n", "* show symptoms - lists all known symptoms\n", \
+              "* bye/quit/exit - terminates conversation")
+        return UserInputIntentReq(action.ctx)
+
+
+class TerminateHandler(ActionHandler):
+    def handle(self, action: ShowSymsAction) -> IntentReq:
+        utils.end_session(action.ctx)
+
+        return TerminateIntentReq(action.ctx)
 
 
 class AdditionalSymptomsHandler(ActionHandler):

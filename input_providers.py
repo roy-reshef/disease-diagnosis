@@ -14,7 +14,6 @@ class Speech(Provider):
 
     def __init__(self):
         print("running speech recognition version:", sr.__version__)
-        print("say 'bye' whenever you want to quit")
 
     def get(self, prompt: str) -> str:
         r = sr.Recognizer()
@@ -41,22 +40,10 @@ class Speech(Provider):
                 # speech was unintelligible
                 response["error"] = "Unable to recognize speech"
 
-        # TODO: check for errors
-        user_input = response["transcription"]
-        if user_input == "bye":
-            return None
-        else:
-            return user_input
+        return response["transcription"]
 
 
 class Terminal(Provider):
 
-    def __init__(self):
-        print("type 'bye' whenever you want to quit")
-
     def get(self, prompt: str) -> str:
-        user_input = input(prompt)
-        if user_input == "bye":
-            return None
-        else:
-            return user_input
+        return input(prompt)

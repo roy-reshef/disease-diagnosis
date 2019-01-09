@@ -15,3 +15,11 @@ def get_user_syms(user_input: str, ctx: Context) -> List[str]:
 
     return user_syms
 
+def end_session(ctx: Context):
+    if len(ctx.possible_diseases) > 0:
+        print('\nhealth condition diagnosis finished')
+        print("possible condition(s) you might suffer from:", ",".join(ctx.possible_diseases))
+    else:
+        print("possible health condition is not diagnosed. sorry.")
+
+    print("bye for now. i am glad to be of help")
